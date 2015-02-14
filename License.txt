@@ -1,0 +1,2 @@
+本程序为开源项目，由 @阿年飞少 维护：
+https://github.com/ph7pal/zmfcms/
