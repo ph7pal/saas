@@ -8,6 +8,7 @@
         $cs->registerCssFile(Yii::app()->baseUrl.'/common/css/bootstrap.min.css');
         $cs->registerCssFile(Yii::app()->baseUrl.'/common/css/bootstrap-datetimepicker.min.css');
         $cs->registerCssFile(Yii::app()->baseUrl.'/common/css/dashboard.css');
+        $cs->registerCssFile(Yii::app()->baseUrl . '/common/css/font-awesome.min.css');
         $cs->registerCoreScript('jquery');
         $cs->registerScriptFile(Yii::app()->baseUrl . "/common/js/bootstrap.min.js", CClientScript::POS_HEAD);
         $cs->registerScriptFile(Yii::app()->baseUrl . "/common/js/bootstrap-datetimepicker.min.js", CClientScript::POS_END);
@@ -17,11 +18,7 @@
         <link rel="shortcut icon" href="<?php echo Yii::app()->baseUrl; ?>/favicon.ico" type="image/x-icon" />
         <title><?php echo CHtml::encode($this->pageTitle); ?></title>
     </head>
-    <body>       
-        
-    
-        
-        
+    <body>
 <div class="container-fluid">
       <div class="row">
         <div class="col-sm-2 col-md-2 sidebar">
@@ -32,51 +29,55 @@
                       </a>
                     </div>
                     <div class="media-body">
-                      <h4 class="media-heading"><?php echo $this->userInfo['username'];?></h4>
+                        <p><?php echo $this->userInfo['username'];?><span class="pull-right"><?php echo CHtml::link('退出',array('site/logout'));?></span></p>
+                      <p>团队：<?php echo $this->groupInfo['title'];?></p>
+                      <p>待办:0 | 已办:0 | 延期:0</p>
                     </div>
                 </div>
             <div class="clearfix"></div>
           <ul class="nav nav-sidebar">
-              <li class="active"><a href="javascript:;" class="zmf" action="my-tasks" action-data="<?php echo tools::jiaMi($this->uid);?>"><span class="glyphicon glyphicon-th-list"></span> 我的任务</a></li>
-              <li><a href="javascript:;" class="zmf" action="my-notices" action-data="<?php echo tools::jiaMi($this->uid);?>"><span class="glyphicon glyphicon-bell"></span> 提醒<span class="badge pull-right">14</span></a></li>
+              <li><a href="javascript:;" class="zmf autoload" action="my-tasks" action-data="<?php echo tools::jiaMi($this->uid);?>"><span class="glyphicon glyphicon-th-list"></span> 我的任务</a></li>
+              <li><a href="javascript:;" class="zmf" action="my-notices" action-data="<?php echo tools::jiaMi($this->uid);?>"><span class="glyphicon glyphicon-bell"></span> 提醒<!--span class="badge pull-right">14</span--></a></li>
               <li><a href="javascript:;" class="zmf" action="my-notices" action-data="<?php echo tools::jiaMi($this->uid);?>"><span class="glyphicon glyphicon-calendar"></span> 黑板报</a></li>
               <li><a href="javascript:;" class="zmf" action="settings" action-data="<?php echo tools::jiaMi($this->uid);?>"><span class="glyphicon glyphicon-cog"></span> 设置</a></li>
           </ul>
           <ul class="nav nav-sidebar">
-              <h2 class="section-title">团队成员 <span class="glyphicon glyphicon-plus"></span></h2>
+              <?php if($this->userInfo['groupid']>0){?>              
+              <h2 class="section-title">团队成员 <span class="icon-plus zmf" action="new-member"></span></h2>
               <?php if(!empty($this->members)){?>
-              <?php foreach($this->members as $mem){?><li><?php if($mem['status']){echo CHtml::link($mem['username'],'javascript:;',array('class'=>'zmf'));}else{echo CHtml::link($mem['username'].'<span class="pull-right">待激活</span>','javascript:;');}?></li><?php }?>
+              <?php foreach($this->members as $mem){?><li><?php if($mem['status']){echo CHtml::link($mem['username'],'javascript:;',array('class'=>'zmf','action'=>'my-tasks','action-data'=>tools::jiaMi($mem['id'])));}else{echo CHtml::link($mem['username'].'<span class="pull-right">待激活</span>','javascript:;');}?></li><?php }?>
+              <?php }?>
+              <?php }else{?>
+              <h2 class="section-title">团队成员</h2>
+              <p class="text-center"><?php echo CHtml::link('创建团队','javascript:;',array('class'=>'btn btn-default zmf','action'=>'new-group'));?></p>
               <?php }?>
           </ul>
           <ul class="nav nav-sidebar" id="list-projects">
-              <h2 class="section-title">我的项目 <span class="glyphicon glyphicon-plus zmf" action="create-project"></span></h2>
+              <h2 class="section-title">我的项目 <span class="icon-plus zmf" action="create-project"></span></h2>
               <?php if(!empty($this->projects)){foreach($this->projects as $project){?>
               <li><?php echo CHtml::link($project['title'],'javascript:;',array('class'=>'zmf','action'=>'project','action-data'=>tools::jiaMi($project['id'])));?></li>
               <?php }}?>
           </ul>
         </div>
-        
           <div class="main">
-          <div class="col-sm-5 col-md-5 col-sm-offset-2 col-md-offset-2" id="project-tasks-holder" style="border-left: 3px solid #428bca">
-              
-              
-              
+              <div class="col-sm-5 col-md-5 col-sm-offset-2 col-md-offset-2 no-padding" id="project-tasks-holder"></div>
+              <div class="col-sm-5 col-md-5 holder-right no-padding" id="task-detail-holder">
+                  <p class="help-block">请选择任务以查看详情</p>                  
+              </div>
           </div>
-          <div class="col-sm-5 col-md-5 holder-right" id="task-detail-holder">
-              
-          </div>
-          </div>  
-          
       </div>
     </div>
     <script>
         var configs={};
         configs.createProjectHtml='<?php echo $this->renderPartial('/forms/project',NULL,false);?>';
+        configs.newMemberHtml='<?php echo $this->renderPartial('/forms/newMember',NULL,false);?>';
+        configs.newGroupHtml='<?php echo $this->renderPartial('/forms/newGroup',NULL,false);?>';
         configs.csrfToken='<?php echo Yii::app()->request->csrfToken;?>';
         configs.sessionId='<?php echo Yii::app()->session->sessionID;?>';
-        configs.handleUrl='<?php echo Yii::app()->createUrl('form/index');?>';
+        configs.handleUrl='<?php echo Yii::app()->createUrl('form/index',array('groupid'=>$this->groupid));?>';
         $(function(){
             rebind();
+            $('.autoload').click();
         });
     </script>
     </body>

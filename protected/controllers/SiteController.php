@@ -1,8 +1,8 @@
 <?php
 
-class SiteController extends T {
+class SiteController extends Q {
 
-    //public $layout = 'login';
+    public $layout = 'simple';
 
     public function actions() {
         return array(
@@ -19,6 +19,11 @@ class SiteController extends T {
             ),
         );
     }
+    
+    public function init() {
+        parent::init();
+        $this->pageTitle='SAAS';
+    }
 
     public function actionLogin() {
         if (!Yii::app()->user->isGuest) {
@@ -32,17 +37,9 @@ class SiteController extends T {
         if (isset($_POST['LoginForm'])) {
             $model->attributes = $_POST['LoginForm'];
             if ($model->validate() && $model->login()) {
-                $id = Yii::app()->user->id;
-                $ip = Yii::app()->request->userHostAddress;
-                $info = Users::model()->findByPk($id);
-                $info->last_login_ip = ip2long($ip);
-                $info->last_login_time = time();
-                $info->login_count+=1;
-                $info->save();
-                $this->redirect(Yii::app()->createUrl('user/index'));
+                $this->redirect(array('index/index'));
             }
         }
-        $this->_noColButOther = 'login';
         $this->render('login', array('model' => $model));
     }
 
@@ -98,7 +95,6 @@ class SiteController extends T {
         $data = array(
             'model' => $model
         );
-        $this->_noColButOther = 'reg';
         $this->render('reg', $data);
     }
 

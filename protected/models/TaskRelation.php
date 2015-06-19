@@ -55,5 +55,18 @@ class TaskRelation extends CActiveRecord {
         $model->attributes=$attr;
         $model->save();
     }
+    
+    /**
+     * 获取一个任务的所有参与者，不包括创建者
+     * @param type $tid
+     * @return array 用户id及用户名
+     */
+    public static function getMembers($tid){
+        if(!$tid){
+            return array();
+        }
+        $sql="SELECT u.id,u.username FROM {{users}} u,{{task_relation}} tr WHERE u.id=tr.touid AND tr.tid='{$tid}'";
+        return Yii::app()->db->createCommand($sql)->queryAll();
+    }
 
 }

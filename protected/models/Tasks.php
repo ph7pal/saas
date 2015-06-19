@@ -5,6 +5,8 @@ class Tasks extends CActiveRecord {
     const STATUS_PASSED = 1;//在显示
     const STATUS_FINISHED = 2;//已完成
     const STATUS_DELED = 3;//已删除
+    
+    public $members;
 
     public function tableName() {
         return '{{tasks}}';
@@ -16,7 +18,7 @@ class Tasks extends CActiveRecord {
           array('followers, tags, attaches, order, status', 'numerical', 'integerOnly' => true),
           array('cTime', 'default', 'setOnEmpty' => true, 'value' => time()),
           array('pid, tid, uid, expired_time,cTime', 'length', 'max' => 11),
-          array('title, desc', 'length', 'max' => 255),
+          array('title, desc,members', 'length', 'max' => 255),
           array('id, pid, tid, uid, followers, tags, attaches, title, desc, order, expired_time,cTime, status', 'safe', 'on' => 'search'),
         );
     }
@@ -41,6 +43,7 @@ class Tasks extends CActiveRecord {
           'expired_time' => '过期时间',
           'cTime' => '创建时间',
           'status' => 'Status',
+          'members' => '参与者',
         );
     }
 

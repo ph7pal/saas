@@ -10,7 +10,7 @@ $form=$this->beginWidget('CActiveForm', array(
       <button class="btn btn-default" type="button" data-toggle="tooltip" data-placement="auto" title="指派任务"><span class="glyphicon glyphicon-user"></span></button>
   </span>
   <span class="input-group-btn">
-      <button class="btn btn-default date form_datetime" type="button" data-toggle="tooltip" data-placement="auto" title="指定完成期限" data-date="2015-02-10" data-date-format="dd MM yyyy" data-link-field="<?php echo CHtml::activeId($model,'expired_time');?>"><span class="glyphicon glyphicon-calendar"></span></button>
+      <button class="btn btn-default date form_datetime" type="button" data-toggle="tooltip" data-placement="auto" title="指定完成期限" data-date="<?php echo zmf::time('','Y-m-d');?>" data-date-format="dd MM yyyy" data-link-field="<?php echo CHtml::activeId($model,'expired_time');?>"><span class="glyphicon glyphicon-calendar"></span></button>
   </span>
 </div>
 <?php $this->endWidget(); ?>

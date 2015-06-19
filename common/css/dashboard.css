@@ -1,7 +1,9 @@
 /*
  * Global add-ons
  */
-
+.no-padding{
+    padding: 0;
+}
 .sub-header {
   padding-bottom: 10px;
   border-bottom: 1px solid #eee;
@@ -43,7 +45,7 @@
 .nav-sidebar {
   margin-right: -21px; /* 20px padding + 1px border */
   margin-bottom: 20px;
-  margin-left: -20px;
+  margin-left: -10px;
 }
 .nav-sidebar > li > a {
   padding:5px 10px;
@@ -60,14 +62,6 @@
  * Main content
  */
 
-.main {
-  padding: 15px 0;
-}
-@media (min-width: 768px) {
-  .main {
-    padding: 15px 0;
-  }
-}
 .main .page-header {
   margin-top: 0;
 }
@@ -98,9 +92,6 @@ margin: 0;
 }
 .sidebar .section-title{
     padding:0 10px;
-}
-input[type=checkbox], input[type=radio] {
-    margin:0;
 }
 .panel-body{
     font-size: 12px;

@@ -198,35 +198,6 @@ class zmf {
         }
     }
 
-    public static function creditIcon($uid = '', $return = '', $creditType = '') {
-        if (!$uid && !$creditType) {
-            return false;
-        }
-        if ($uid) {
-            $creditlogo = zmf::userConfig($uid, 'creditlogo');
-            if (!$creditlogo) {
-                return false;
-            }
-        } else {
-            $creditlogo = $creditType;
-        }
-        if ($return == 'type') {
-            return $creditlogo;
-        }
-        $info = tools::creditLogos($creditlogo);
-        if (!$info) {
-            return false;
-        }
-
-        $url = self::config('baseurl') . 'common/images/credits/' . $creditlogo . '.png';
-        $_url = self::attachBase('app') . '../common/images/credits/' . $creditlogo . '.png';
-        if (file_exists($_url)) {
-            return "<img src='{$url}' title='" . $info['desc'] . "' alt='" . $info['title'] . "'/>";
-        } else {
-            return "<span class='btn btn-primary btn-xs' title='" . $info['desc'] . "'>" . $info['title'] . "</span>";
-        }
-    }
-
     //fileCache
     public static function setFCache($key, $value, $expire = '60') {
         Yii::app()->filecache->set($key, $value, $expire);
@@ -257,45 +228,13 @@ class zmf {
 
     public static function isSystem($return = '') {
         $positions = array(
-          '1' => '是',
-          '0' => '否',
+            '1' => '是',
+            '0' => '否',
         );
         if ($return != '') {
             return $positions[$return];
         } else {
             return $positions;
-        }
-    }
-
-    public static function freeOrPayed($return = '') {
-        $positions = array(
-          'free' => '免费',
-          'perHour' => '每小时',
-          'perday' => '每天',
-          'perWeek' => '每周',
-          'perMonth' => '每月',
-          'perSea' => '季度',
-          'perYear' => '每年',
-        );
-        if ($return != '') {
-            return $positions[$return];
-        } else {
-            return $positions;
-        }
-    }
-
-    public static function exStatus($status) {
-        switch ($status) {
-            case 0:
-                return '未编辑';
-            case 1:
-                return '已通过';
-            case 2:
-                return '未通过';
-            case 3:
-                return '已删除';
-            default :
-                return '未编辑';
         }
     }
 
@@ -392,12 +331,12 @@ class zmf {
         }
         $mobile = array();
         static $mobilebrowser_list = array('iphone', 'android', 'phone', 'mobile', 'wap', 'netfront', 'java', 'opera mobi', 'opera mini',
-          'ucweb', 'windows ce', 'symbian', 'series', 'webos', 'sony', 'blackberry', 'dopod', 'nokia', 'samsung',
-          'palmsource', 'xda', 'pieplus', 'meizu', 'midp', 'cldc', 'motorola', 'foma', 'docomo', 'up.browser',
-          'up.link', 'blazer', 'helio', 'hosin', 'huawei', 'novarra', 'coolpad', 'webos', 'techfaith', 'palmsource',
-          'alcatel', 'amoi', 'ktouch', 'nexian', 'ericsson', 'philips', 'sagem', 'wellcom', 'bunjalloo', 'maui', 'smartphone',
-          'iemobile', 'spice', 'bird', 'zte-', 'longcos', 'pantech', 'gionee', 'portalmmm', 'jig browser', 'hiptop',
-          'benq', 'haier', '^lct', '320x320', '240x320', '176x220');
+            'ucweb', 'windows ce', 'symbian', 'series', 'webos', 'sony', 'blackberry', 'dopod', 'nokia', 'samsung',
+            'palmsource', 'xda', 'pieplus', 'meizu', 'midp', 'cldc', 'motorola', 'foma', 'docomo', 'up.browser',
+            'up.link', 'blazer', 'helio', 'hosin', 'huawei', 'novarra', 'coolpad', 'webos', 'techfaith', 'palmsource',
+            'alcatel', 'amoi', 'ktouch', 'nexian', 'ericsson', 'philips', 'sagem', 'wellcom', 'bunjalloo', 'maui', 'smartphone',
+            'iemobile', 'spice', 'bird', 'zte-', 'longcos', 'pantech', 'gionee', 'portalmmm', 'jig browser', 'hiptop',
+            'benq', 'haier', '^lct', '320x320', '240x320', '176x220');
         $pad_list = array('pad', 'gt-p1000');
 
         $useragent = strtolower($_SERVER['HTTP_USER_AGENT']);
@@ -424,23 +363,6 @@ class zmf {
         return false;
     }
 
-    public static function qrcode($content, $origin, $keyid) {
-        if (!$content || !$origin || !$keyid) {
-            return false;
-        }
-        $filename = 'qrcode.png';
-        $siteUrl = self::attachBase('site') . 'qrcode/' . $origin . '/' . $keyid . '/';
-        $appUrl = self::attachBase('app') . '/qrcode/' . $origin . '/' . $keyid . '/';
-        self::createUploadDir($appUrl);
-        if (file_exists($appUrl . $filename)) {
-            return $siteUrl . $filename;
-        } else {
-            Yii::import('ext.qrcode.QRCode');
-            $code = new QRCode($content);
-            $code->create($appUrl . $filename);
-            return $siteUrl . $filename;
-        }
-    }
     /**
      * 根据时区获取当前时间
      * @param type $timestamp
@@ -473,6 +395,24 @@ class zmf {
             date_default_timezone_set('Etc/GMT-8');
         }
         return date($format, $time);
+    }
+    
+    public static function getCookie($key) {
+        $value = isset(Yii::app()->request->cookies[$key]) ? Yii::app()->request->cookies[$key]->value : '';
+        return $value;
+    }
+
+    public static function delCookie($key) {
+        $cookie = Yii::app()->request->getCookies();
+        unset($cookie[$key]);
+    }
+    
+    public static function uid() {
+        if (Yii::app()->user->isGuest) {
+            return false;
+        } else {
+            return Yii::app()->user->id;
+        }
     }
 
 }

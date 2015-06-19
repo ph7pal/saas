@@ -59,67 +59,132 @@ function createProject() {
         alert('t');
         return false;
     }
-    _post({
-        url: configs.handleUrl,
-        data: {
-            t: t,
-            d: d,
-            method: 'create-project',
-            YII_CSRF_TOKEN: configs.csrfToken
+    $.post(configs.handleUrl, {
+        t: t,
+        d: d,
+        method: 'create-project',
+        YII_CSRF_TOKEN: configs.csrfToken
+    }, function (result, status) {
+        result = eval('(' + result + ')');
+        if (result['status'] == '1') {
+            closeDialog();
+        } else {
+            dialog({msg: result['msg']});
         }
     });
 }
 /**
- * 列出项目的
+ * 添加新团队成员
+ */
+function newMember() {
+    var email = $('#new-member-email').val();
+    if (!email) {
+        return false;
+    }
+    $.post(configs.handleUrl, {
+        email: email,
+        method: 'new-member',
+        YII_CSRF_TOKEN: configs.csrfToken
+    }, function (result, status) {
+        result = eval('(' + result + ')');
+        if (result['status'] == '1') {
+            closeDialog();
+        } else {
+            dialog({msg: result['msg']});
+        }
+    });
+}
+function getMembers() {
+    $.post(configs.handleUrl, {
+        method: 'get-members',
+        YII_CSRF_TOKEN: configs.csrfToken
+    }, function (result, status) {
+        result = eval('(' + result + ')');
+        if (result['status'] == '1') {
+            $("#float-members-holder").html(result['msg']);
+        } else {
+            dialog({msg: result['msg']});
+        }
+    });
+}
+/**
+ * 添加新团队
+ */
+function newGroup() {
+    var t = $('#Group_title').val();
+    var d = $('#Group_desc').val();
+    if (!t) {
+        alert('t');
+        return false;
+    }
+    $.post(configs.handleUrl, {
+        t: t,
+        d: d,
+        method: 'create-group',
+        YII_CSRF_TOKEN: configs.csrfToken
+    }, function (result, status) {
+        result = eval('(' + result + ')');
+        if (result['status'] == '1') {
+            closeDialog();
+        } else {
+            dialog({msg: result['msg']});
+        }
+    });
+}
+/**
+ * 列出项目的所有任务
  */
 function project(params) {
     if (typeof params != "object") {
         return false;
     }
-    var dom=params.dom;
-    var m=params.method;
-    if(!m){
-        m='project';
+    var dom = params.dom;
+    var m = params.method;
+    if (!m) {
+        m = 'project';
     }
-    var id=dom.attr('action-data');
-    if(!id){
+    var id = dom.attr('action-data');
+    if (!id) {
         return false;
     }
+    $("#project-tasks-holder").html('<p class="text-center"><i class="icon-spinner icon-spin"></i> 正在加载中...<p>');
     $.post(configs.handleUrl, {
-            id: id,
-            method: m,
-            YII_CSRF_TOKEN: configs.csrfToken
-        }, function (result, status) {
-            result = eval('(' + result + ')');
-            if (result['status'] == '1') {
-                $("#project-tasks-holder").html(result['msg']); 
-                rebind();
-            }else{
-                dialog({msg:result['msg']});
-            }
+        id: id,
+        method: m,
+        YII_CSRF_TOKEN: configs.csrfToken
+    }, function (result, status) {
+        result = eval('(' + result + ')');
+        $("#task-detail-holder").html('');
+        if (result['status'] == '1') {
+            $("#project-tasks-holder").html(result['msg']);
+            rebind();
+        } else {
+            dialog({msg: result['msg']});
+        }
     });
 }
-function task(params){
+function task(params) {
     if (typeof params != "object") {
         return false;
     }
-    var dom=params.dom;
-    var id=dom.attr('action-data');
-    if(!id){
+    var dom = params.dom;
+    var id = dom.attr('action-data');
+    if (!id) {
         return false;
     }
+    $("#task-detail-holder").html('<p class="text-center"><i class="icon-spinner icon-spin"></i> 正在加载中...<p>');
     $.post(configs.handleUrl, {
-            id: id,
-            method: 'task',
-            YII_CSRF_TOKEN: configs.csrfToken
-        }, function (result, status) {
-            result = eval('(' + result + ')');
-            if (result['status'] == '1') {
-                $("#task-detail-holder").html(result['msg']); 
-                rebind();
-            }else{
-                dialog({msg:result['msg']});
-            }
+        id: id,
+        method: 'task',
+        YII_CSRF_TOKEN: configs.csrfToken
+    }, function (result, status) {
+        result = eval('(' + result + ')');
+        if (result['status'] == '1') {
+            $("#task-detail-holder").html(result['msg']);
+            rebind();
+        } else {
+            dialog({msg: result['msg']});
+        }
     });
 }
 /**
@@ -164,138 +229,161 @@ function _post(params) {
         }
     });
 }
-function checkClick(dom){
-    var action=dom.attr('action');
-    if(action=='create-project'){
-        dialog({msg:configs.createProjectHtml,action:'do-create-project'});
-        $('[action="do-create-project"]').click(function(){
+function checkClick(dom) {
+    var action = dom.attr('action');
+    if (action == 'create-project') {
+        dialog({msg: configs.createProjectHtml, action: 'do-create-project', title: '创建项目'});
+        $('[action="do-create-project"]').click(function () {
             createProject();
         });
-    }else if(action=='project'){
-        project({dom:dom});
-    }else if(action=='show'){
-        var s=dom.attr('action-data');
-        $('#'+s).removeClass('hidden').show();
-    }else if(action=='create-task'){
-        createTask({dom:dom});
-    }else if(action=='task'){
-        task({dom:dom});
-    }else if(action=='complete-task'){
-        comTask({dom:dom});
-    }else if(action=='comment'){
-        comment({dom:dom});
-    }else if(action=='my-tasks'){
-        project({dom:dom,method:'my-task'});
-    }else if(action=='assign'){
-//        dom.popover({
-//            content:'<a>dfdf</a>',
-//            html:true,
-//            title:'指派任务'
-//        });
+    } else if (action == 'new-group') {
+        dialog({msg: configs.newGroupHtml, action: 'do-create-group', title: '创建团队'});
+        $('[action="do-create-group"]').click(function () {
+            newGroup();
+        });
+    } else if (action == 'new-member') {
+        dialog({msg: configs.newMemberHtml, action: 'do-new-member', title: '添加新成员'});
+        $('[action="do-new-member"]').click(function () {
+            newMember();
+        });
+    } else if (action == 'project') {
+        project({dom: dom});
+    } else if (action == 'show') {
+        var s = dom.attr('action-data');
+        $('#' + s).removeClass('hidden').show();
+    } else if (action == 'create-task') {
+        createTask({dom: dom});
+    } else if (action == 'task') {
+        task({dom: dom});
+    } else if (action == 'complete-task') {
+        comTask({dom: dom});
+    } else if (action == 'comment') {
+        comment({dom: dom});
+    } else if (action == 'my-tasks') {
+        project({dom: dom, method: 'my-task'});
+    } else if (action == 'assign') {
+        dialog({msg: '<div id="float-members-holder"></div>', action: 'assign-member', title: '指派任务'});
+        getMembers();
+        $('[action="assign-member"]').click(function () {
+            var type = dom.attr('action-type');
+            var ids = '';
+            $("input:checkbox[name='assign-user']:checked").each(function () {
+                ids += $(this).val() + '#';
+            });
+            if (ids != '') {
+                //新建任务时指派参与者
+                $('#Tasks_members_' + type).val(ids);
+            }
+        });
     }
-    
+
 }
-function createTask(params){
+function createTask(params) {
     if (typeof params != "object") {
         return false;
     }
-    var dom=params.dom;
-    var type=dom.attr('action-type');
-    if(!type){
+    var dom = params.dom;
+    var type = dom.attr('action-type');
+    if (!type) {
         return false;
     }
-    var _dom=$('#Tasks_title_'+type);
-    var t=_dom.val();
-    var tid=$('#Tasks_tid_'+type).val();
-    var pid=$('#Tasks_pid_'+type).val();
-    var d=$('#Tasks_desc_'+type).val();
-    var time=$('#Tasks_expired_time_'+type).val();
-    if(!t){
-        $('#Tasks_title_'+type).parent('div').addClass('has-error');
+    var _dom = $('#Tasks_title_' + type);
+    var t = _dom.val();
+    var tid = $('#Tasks_tid_' + type).val();
+    var pid = $('#Tasks_pid_' + type).val();
+    var d = $('#Tasks_desc_' + type).val();
+    var time = $('#Tasks_expired_time_' + type).val();
+    var uids = $('#Tasks_members_' + type).val();
+    if (!t) {
+        $('#Tasks_title_' + type).parent('div').addClass('has-error');
         return false;
-    }else{
+    } else {
         _dom.parent('div').removeClass('has-error');
     }
+    if (typeof uids == 'undefined') {
+        uids = '';
+    }
     $.post(configs.handleUrl, {
-            t: t,
-            tid: tid,
-            pid: pid,
-            d: d,
-            time: time,
-            method: 'create-task',
-            YII_CSRF_TOKEN: configs.csrfToken
-        }, function (result, status) {
-            result = eval('(' + result + ')');
-            if (result['status'] == '1') {
-                if(type=='task'){
-                    $("#task-subtasks-"+tid).append(result['msg']); 
-                }else if(type=='project'){
-                    removeTips();
-                    $("#project-tasks-list").append(result['msg']); 
-                }
-                _dom.val('');                
-                rebind();
-            }else{
-                dialog({msg:result['msg']});
+        t: t,
+        tid: tid,
+        pid: pid,
+        d: d,
+        time: time,
+        uids: uids,
+        method: 'create-task',
+        YII_CSRF_TOKEN: configs.csrfToken
+    }, function (result, status) {
+        result = eval('(' + result + ')');
+        if (result['status'] == '1') {
+            if (type == 'task') {
+                $("#task-subtasks-" + tid).append(result['msg']);
+            } else if (type == 'project') {
+                removeTips();
+                $("#project-tasks-list").append(result['msg']);
             }
+            _dom.val('');
+            rebind();
+        } else {
+            dialog({msg: result['msg']});
+        }
     });
 }
-function comTask(params){
+function comTask(params) {
     if (typeof params != "object") {
         return false;
     }
-    var dom=params.dom;
-    var id=dom.parent('p').attr('action-data');
+    var dom = params.dom;
+    var id = dom.parent('p').attr('action-data');
     $.post(configs.handleUrl, {
-            id: id,
-            method: 'complete-task',
-            YII_CSRF_TOKEN: configs.csrfToken
-        }, function (result, status) {
-            result = eval('(' + result + ')');
-            if (result['status'] == '1') {
-                dom.parent('p').remove();
-            }else{
-                dialog({msg:result['msg']});
-            }
+        id: id,
+        method: 'complete-task',
+        YII_CSRF_TOKEN: configs.csrfToken
+    }, function (result, status) {
+        result = eval('(' + result + ')');
+        if (result['status'] == '1') {
+            dom.parent('p').remove();
+        } else {
+            dialog({msg: result['msg']});
+        }
     });
 }
-function comment(params){
+function comment(params) {
     if (typeof params != "object") {
         return false;
     }
-    var dom=params.dom;
-    var id=dom.attr('action-data');
-    if(!id){
+    var dom = params.dom;
+    var id = dom.attr('action-data');
+    if (!id) {
         return false;
     }
-    var _dom=$('#comment-'+id);
-    var c=_dom.val();    
-    if(!c){
+    var _dom = $('#comment-' + id);
+    var c = _dom.val();
+    if (!c) {
         _dom.parent('div').addClass('has-error');
         return false;
     }
     var $btn = dom.button('loading');
     $.post(configs.handleUrl, {
-            id: id,
-            c: c,
-            method: 'comment',
-            YII_CSRF_TOKEN: configs.csrfToken
-        }, function (result, status) {
-            result = eval('(' + result + ')');
-            $btn.button('reset');
-            if (result['status'] == '1') {
-                _dom.val('');
-                $('#task-comments-'+id).append(result['msg']);
-            }else{
-                dialog({msg:result['msg']});
-            }
+        id: id,
+        c: c,
+        method: 'comment',
+        YII_CSRF_TOKEN: configs.csrfToken
+    }, function (result, status) {
+        result = eval('(' + result + ')');
+        $btn.button('reset');
+        if (result['status'] == '1') {
+            _dom.val('');
+            $('#task-comments-' + id).append(result['msg']);
+        } else {
+            dialog({msg: result['msg']});
+        }
     });
 }
-function rebind(){
+function rebind() {
     $('.form_datetime').datetimepicker({
-        language:  'zh-CN',
+        language: 'zh-CN',
         weekStart: 1,
-        todayBtn:  1,
+        todayBtn: 1,
         autoclose: 1,
         todayHighlight: 1,
         startView: 2,
@@ -303,7 +391,7 @@ function rebind(){
         showMeridian: 1
     });
     $('[data-toggle="tooltip"]').tooltip();
-    $('.task-lists .task-list').unbind('click').click(function(){
+    $('.task-lists .task-list').unbind('click').click(function () {
 //        $('.task-lists tr').removeClass('primary');
 //        if($(this).hasClass('primary')){
 //            $(this).removeClass('primary');
@@ -311,19 +399,19 @@ function rebind(){
 //            $(this).removeClass('primary').addClass('primary');
 //        }
     });
-    $('.complete-task').mouseover(function(){
+    $('.complete-task').mouseover(function () {
         $(this).removeClass('glyphicon-ok').addClass('glyphicon-ok');
     });
-    $('.complete-task').mouseout(function(){
+    $('.complete-task').mouseout(function () {
         $(this).removeClass('glyphicon-ok');
     });
-    
-    $('.zmf').unbind('click').click(function(e){
+
+    $('.zmf').unbind('click').click(function (e) {
         //var dom=$(this);
-        var dom=$(e.target);
+        var dom = $(e.target);
         checkClick(dom);
     });
 }
-function removeTips(){
+function removeTips() {
     $('.tips-holder').remove();
 }

@@ -1,7 +1,9 @@
 <div class="panel panel-primary">
     <div class="panel-heading"><?php echo $project['title'];?></div>
     <div class="panel-body">
+        <?php if(!empty($info['tags'])){?>
         <span class="label label-primary">Primary</span><span class="label label-primary">Primary</span>
+        <?php }?>
         <h1><?php echo $info['title'];?></h1>
         <textarea class="form-control" placeholder="添加描述" rows="1"><?php echo $info['desc'];?></textarea>
         <hr/>
@@ -25,5 +27,7 @@
         <div class="form-group"><textarea class="form-control" id="comment-<?php echo tools::jiaMi($info['id']);?>" placeholder="添加评论" rows="1"></textarea></div>
         <div class="form-group"><a class="btn btn-primary btn-xs zmf" action="comment" data-loading-text="提交..." action-data="<?php echo tools::jiaMi($info['id']);?>">提交</a></div>
     </div>
-    <div class="panel-footer">参与者：<a>大飞</a></div>
+    <?php if(!empty($members)){?>
+    <div class="panel-footer">参与者：<?php foreach($members as $mem){echo CHtml::link($mem['username'],'javascript:;');}?></div>
+    <?php }?>
 </div>

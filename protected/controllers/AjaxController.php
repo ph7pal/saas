@@ -1,6 +1,6 @@
 <?php
 
-class AjaxController extends T {
+class AjaxController extends Q {
 
     public function init() {
         parent::init();

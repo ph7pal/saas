@@ -27,7 +27,7 @@ class Users extends CActiveRecord {
           'username' => '用户名',
           'password' => '密码',
           'email' => '邮箱',
-          'groupid' => '用户组',
+          'groupid' => '是否创建过团队',
           'email_status' => '邮箱状态',
           'status' => 'Status',
           'hash' => 'Hash',
@@ -57,12 +57,23 @@ class Users extends CActiveRecord {
         return $info;
     }
     
-    public static function getMembers($uid){
-        if(!$uid){
+    /**
+     * 获取团队下的所有成员
+     * @param type $groupid
+     * @return boolean
+     */
+    public static function getMembers($groupid,$type='all'){
+        if(!$groupid){
             return false;
         }
-        $sql="SELECT id,username,status FROM {{users}} WHERE id IN(SELECT uid FROM {{project_relation}} WHERE pid IN(SELECT pid FROM {{project_relation}} WHERE uid=:uid))";
-        $users=Users::model()->findAllBySql($sql, array(':uid'=>$uid));
+        if($type=='all'){
+            $sql="SELECT u.id,u.username,u.status FROM {{users}} u,{{group_link}} gl WHERE u.id=gl.uid AND gl.groupid=:groupid";
+        }elseif($type=='passed'){
+            $sql="SELECT u.id,u.username,u.status FROM {{users}} u,{{group_link}} gl WHERE u.id=gl.uid AND gl.groupid=:groupid AND u.status=".Tasks::STATUS_PASSED;
+        }else{
+            return array();
+        }
+        $users=Users::model()->findAllBySql($sql, array(':groupid'=>$groupid));
         return $users;
     }
 
