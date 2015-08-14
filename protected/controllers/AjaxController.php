@@ -13,8 +13,8 @@ class AjaxController extends Q {
         if (Yii::app()->user->isGuest) {
             $this->jsonOutPut(0, Yii::t('default', 'loginfirst'));
         }
-    }
-    
+    }    
+      
     public function actionTasks(){
         $id=zmf::filterInput($_POST['pid'],'t',1);        
         $id=tools::jieMi($id);

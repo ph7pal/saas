@@ -23,15 +23,20 @@ class Q extends T {
     function init() {
         parent::init();
         Yii::app()->theme = 'web';
-        $uid=zmf::uid();
-        if($uid){            
-            $this->userInfo=  Users::getInfo($uid);
-            $this->uid=$uid;
-        }
         $groupid=zmf::filterInput($_GET['groupid']);
         if($groupid){
-            $this->groupid=$groupid;
-            $this->groupInfo=  Group::findOne($groupid);
+            $groupid=  tools::jieMi($groupid);            
+            if(is_numeric($groupid) && $groupid>0){
+                $this->groupid=$groupid;
+                $this->groupInfo=  Group::findOne($groupid);
+            }
+        }
+        $uid=zmf::uid();
+        if($uid){
+            $this->userInfo=  Users::getInfo($uid);
+            $this->uid=$uid;
+            $num=  Notification::model()->count('uid=:uid',array(':uid'=>$uid));
+            $this->userInfo['noticeNum']=$num;
         }
 //        self::_referer();
     }

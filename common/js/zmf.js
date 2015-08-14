@@ -48,6 +48,7 @@ function closeDialog(a) {
     }
     $('#' + a).modal('hide');
     $('#' + a).remove();
+    $('.modal-backdrop').remove();
 }
 /**
  * 创建项目
@@ -274,9 +275,51 @@ function checkClick(dom) {
                 //新建任务时指派参与者
                 $('#Tasks_members_' + type).val(ids);
             }
+            closeDialog();
         });
+    }else if(action=='my-notices'){
+        getNotices({dom: dom});
     }
-
+}
+function getNums(){
+    $.post(configs.handleUrl, {
+        method: 'getNums',
+        YII_CSRF_TOKEN: configs.csrfToken
+    }, function (result, status) {        
+        result = eval('(' + result + ')');
+        if (result['status'] == '1') {
+            var noticeNum=result['msg']['notices'],todo=result['msg']['todos'];
+            if(noticeNum>0){
+                $("#my-notices-num").removeClass('red-badge').addClass('red-badge').html(noticeNum);
+            }else{
+                $("#my-notices-num").removeClass('red-badge').html('0');
+            }
+            $('#todo-num').html(todo);
+            
+        } else {
+            dialog({msg: result['msg']});
+        }
+    });
+}
+function getNotices(params){
+    if (typeof params != "object") {
+        return false;
+    }
+    var dom = params.dom;    
+    $("#task-detail-holder").html('');
+    $("#project-tasks-holder").html('<p class="text-center"><i class="icon-spinner icon-spin"></i> 正在加载中...<p>');
+    $.post(configs.handleUrl, {
+        method: 'getNotices',
+        YII_CSRF_TOKEN: configs.csrfToken
+    }, function (result, status) {
+        removeTips();
+        result = eval('(' + result + ')');
+        if (result['status'] == '1') {
+            $("#project-tasks-holder").html(result['msg']);
+        } else {
+            dialog({msg: result['msg']});
+        }
+    });
 }
 function createTask(params) {
     if (typeof params != "object") {
@@ -400,10 +443,10 @@ function rebind() {
 //        }
     });
     $('.complete-task').mouseover(function () {
-        $(this).removeClass('glyphicon-ok').addClass('glyphicon-ok');
+        $(this).removeClass('icon-ok').addClass('icon-ok');
     });
     $('.complete-task').mouseout(function () {
-        $(this).removeClass('glyphicon-ok');
+        $(this).removeClass('icon-ok');
     });
 
     $('.zmf').unbind('click').click(function (e) {
@@ -412,6 +455,29 @@ function rebind() {
         checkClick(dom);
     });
 }
+function xunhuan(){
+    getNums();
+    setInterval(function(){getNums();},60000);
+}
 function removeTips() {
     $('.tips-holder').remove();
+}
+function sidebar(){
+    var h=$(window).height();
+    $('.sidebar').css('height',h).show();    
+    $('.nav-sidebar li').click(function(){
+        $('.nav-sidebar li').each(function(){
+            $(this).removeClass('active');
+        });
+        $(this).addClass('active');
+    });
+    /*任务列表单击选中样式*/
+//    $('#project-tasks-list p').click(function(){
+//        $('#project-tasks-list p').each(function(){
+//            $(this).removeClass('active');
+//        });
+//        $(this).addClass('active');
+//    });
+    rebind();
+    xunhuan();
 }

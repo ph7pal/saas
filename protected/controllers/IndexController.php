@@ -9,8 +9,11 @@ class IndexController extends Q {
             $this->redirect(array('site/login'));
         }
         $this->layout='simple';
-        $sql="SELECT g.* FROM {{group}} g,{{group_link}} gl WHERE g.id=gl.groupid AND gl.uid='{$this->uid}'";
+        $sql="SELECT g.id,g.title,g.avatar FROM {{group}} g,{{group_link}} gl WHERE g.id=gl.groupid AND gl.uid='{$this->uid}'";
         $groups=  Yii::app()->db->createCommand($sql)->queryAll();
+        foreach($groups as $k=>$v){
+            $groups[$k]['id']=  tools::jiaMi($v['id']);
+        }
         $data=array(
             'groups'=>$groups
         );
@@ -19,13 +22,12 @@ class IndexController extends Q {
     }
 
     public function actionIndex() {
-        $groupid=zmf::filterInput($_GET['groupid']);
-        if(!$groupid){
+        if(!$this->groupid){
             $this->redirect(array('index/welcome'));
         }
         $uid=$this->uid;
-        $this->projects=  Projects::getGroupAll($groupid);
-        $this->members=Users::getMembers($groupid);
+        $this->projects=  Projects::getGroupAll($this->groupid);
+        $this->members=Users::getMembers($this->groupid);
         $data=array(
           'projects'=>$projects
         );

@@ -9,8 +9,12 @@ if($data['status']==Tasks::STATUS_FINISHED){
     $_extraCss='complete-task';
     $_action='complete-task';
 }
+if($data['expired_time']<zmf::now() && $data['expired_time']>0){
+    $_itemCss.=' expired';
+}
 ?>
 <p class="zmf task-list <?php echo $_itemCss;?>" action="task" action-data="<?php echo tools::jiaMi($data['id']);?>">
-    <span class="glyphicon <?php echo $_extraCss;?>" action="<?php echo $_action;?>"></span>
-    <span data-toggle="tooltip" data-placement="auto" title="<?php echo $_truename.' 添加于 '.tools::formatTime($data['cTime']);?>"><?php echo zmf::subStr($data['title'],30);?> </span><?php echo $data['expired_time']>0 ? tools::formatTime($data['expired_time']) : '';?>
+    <span class="complete-btn <?php echo $_extraCss;?>" action="<?php echo $_action;?>"></span>
+    <?php echo zmf::subStr($data['title'],30);?>
+    <span class="pull-right"><?php echo $data['expired_time']>0 ? zmf::time($data['expired_time'],'m-d H:i') : '';?></span>
 </p>

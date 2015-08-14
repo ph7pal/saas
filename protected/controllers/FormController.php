@@ -27,6 +27,10 @@ class FormController extends Q {
             self::newGroup();
         } elseif ($method == 'get-members') {
             self::getMembers();
+        } elseif ($method == 'getNotices') {
+            self::getNotices();
+        }elseif ($method == 'getNums') {
+            self::getNums();
         }
     }
 
@@ -152,9 +156,9 @@ class FormController extends Q {
             $this->jsonOutPut(0, '页面不存在');
         }
         if ($type == 'my-task') {
-            $sql="SELECT t.* FROM {{tasks}} t,{{task_relation}} tr WHERE t.id=tr.tid AND touid='{$id}'";
+            $sql = "SELECT t.* FROM {{tasks}} t,{{task_relation}} tr WHERE t.id=tr.tid AND touid='{$id}' ORDER BY t.status ASC,t.cTime DESC";
 //            $tasks = Tasks::model()->findAll('uid=:uid AND tid=0 AND status=' . Tasks::STATUS_PASSED, array(':uid' => $id));
-            $tasks=  Yii::app()->db->createCommand($sql)->queryAll();
+            $tasks = Yii::app()->db->createCommand($sql)->queryAll();
         } else {
             $tasks = Tasks::model()->findAll('pid=:pid AND tid=0 AND status=' . Tasks::STATUS_PASSED, array(':pid' => $id));
         }
@@ -188,7 +192,7 @@ class FormController extends Q {
             $this->jsonOutPut(0, '任务标题不能为空');
         }
         if ($time) {
-            $time = strtotime($time,zmf::now());
+            $time = strtotime($time, zmf::now());
         }
         if ($tid) {
             $tid = tools::jieMi($tid);
@@ -212,7 +216,7 @@ class FormController extends Q {
                     'pid' => $pid,
                     'tid' => $model->id,
                     'uid' => $this->uid,
-                    'touid' => 0
+                    'touid' => $this->uid
                 );
                 TaskRelation::add($relAttr);
             } else {
@@ -224,6 +228,14 @@ class FormController extends Q {
                         'touid' => $_uid
                     );
                     TaskRelation::add($relAttr);
+                    $noticeData = array(
+                        'uid' => $_uid,
+                        'pid' => $pid,
+                        'tid' => $model->id,
+                        'logid' => $this->uid,
+                        'content' => $this->userInfo['username'] . '给你创建了新任务：' . $t,
+                    );
+                    Notification::add($noticeData, $this->uid, 'notice');
                 }
             }
             //如果指派了用户，则需要提醒用户
@@ -292,7 +304,7 @@ class FormController extends Q {
         $taskIds = join(',', $taskIds);
         $records = TaskLog::model()->findAllBySql("SELECT * FROM {{task_log}} WHERE pid=:pid AND tid IN({$taskIds}) ORDER BY cTime ASC", array(':pid' => $info['pid']));
         //获取参与者
-        $members=  TaskRelation::getMembers($id);
+        $members = TaskRelation::getMembers($id);
         $model = new Tasks;
         $model->tid = tools::jiaMi($id);
         $model->pid = tools::jiaMi($info['pid']);
@@ -339,6 +351,22 @@ class FormController extends Q {
             TaskLog::add($relAttr);
             //更新统计
             ProjectTasklog::updateLog(array('pid' => $info['pid'], 'finished' => 1));
+            //发送消息
+            //取出所有跟这个任务有关的人
+            $relationUsers = TaskRelation::getMembers($id);
+            $relationUserIds = array_keys(CHtml::listData($relationUsers, 'id', ''));
+            if (!empty($relationUserIds)) {
+                foreach ($relationUserIds as $_uid) {
+                    $noticeData = array(
+                        'uid' => $_uid,
+                        'pid' => $info['pid'],
+                        'tid' => $id,
+                        'logid' => $this->uid,
+                        'content' => $this->userInfo['username'] . '完成任务：' . $info['title'],
+                    );
+                    Notification::add($noticeData, $this->uid, 'notice');
+                }
+            }
             $this->jsonOutPut(1, '标记成功');
         } else {
             $this->jsonOutPut(0, '标记已完成失败');
@@ -374,14 +402,43 @@ class FormController extends Q {
         if ($model->save()) {
             $_uinfo = UserInfo::model()->findByPk($model['uid']);
             $model['uid'] = array(
-              'truename' => $_uinfo['truename'],
-              'uid' => $model['uid']
+                'truename' => $_uinfo['truename'],
+                'uid' => $model['uid']
             );
             $html = $this->renderPartial('/tasks/_comment', $model, true);
             $this->jsonOutPut(1, $html);
         } else {
             $this->jsonOutPut(0, '评论失败');
         }
+    }
+
+    private function getNotices() {
+        $notices=  Notification::model()->findAll(array(
+            'condition'=>'uid=:uid',
+            'order'=>'new DESC,cTime DESC',
+            'select'=>'id,content,cTime,new',
+            'params'=>array(
+                ':uid'=>  $this->uid
+            )
+        ));
+        Notification::model()->updateAll(array('new'=>0),'uid=:uid',array(':uid'=>  $this->uid));
+        $html=$this->renderPartial('/user/notices', array('notices'=>$notices), true);
+        $this->jsonOutPut(1, $html);
+    }
+    
+    /**
+     * 获取用户数据
+     */
+    public function getNums(){
+        $notices=  Notification::model()->count('uid=:uid AND new=1',array(':uid'=>  $this->uid));
+        //待办
+        $sql="SELECT COUNT(tr.id) AS total FROM {{task_relation}} tr,{{tasks}} t WHERE tr.touid='{$this->uid}' AND tr.tid=t.id AND t.status=".Tasks::STATUS_PASSED;
+        $todos=  Yii::app()->db->createCommand($sql)->queryRow();
+        $data=array(
+            'notices'=>$notices,
+            'todos'=>$todos['total'],
+        );
+        $this->jsonOutPut(1,$data);
     }
 
 }

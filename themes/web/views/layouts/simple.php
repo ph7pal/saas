@@ -13,6 +13,7 @@
         <?php
         $cs = Yii::app()->clientScript;
         $cs->registerCssFile(Yii::app()->baseUrl . '/common/css/bootstrap.min.css');
+        $cs->registerCssFile(Yii::app()->baseUrl . '/common/css/font-awesome.min.css');
         $cs->registerCssFile(Yii::app()->baseUrl . '/common/css/zmf.css');
         $cs->registerCoreScript('jquery');
         $cs->registerScriptFile(Yii::app()->baseUrl . "/common/js/bootstrap.min.js", CClientScript::POS_HEAD);
