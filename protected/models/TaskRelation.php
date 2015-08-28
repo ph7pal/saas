@@ -65,7 +65,8 @@ class TaskRelation extends CActiveRecord {
         if(!$tid){
             return array();
         }
-        $sql="SELECT u.id,u.username FROM {{users}} u,{{task_relation}} tr WHERE u.id=tr.touid AND tr.tid='{$tid}'";
+        
+        $sql="SELECT u.id,u.username FROM {{users}} u,{{task_relation}} tr WHERE (u.id=tr.touid OR u.id=tr.uid) AND tr.tid='{$tid}' GROUP BY u.id";
         return Yii::app()->db->createCommand($sql)->queryAll();
     }
 

@@ -22,15 +22,15 @@ class IndexController extends Q {
     }
 
     public function actionIndex() {
+        if(!$this->uid){
+            $this->redirect(array('site/login'));
+        }
         if(!$this->groupid){
             $this->redirect(array('index/welcome'));
         }
         $uid=$this->uid;
         $this->projects=  Projects::getGroupAll($this->groupid);
         $this->members=Users::getMembers($this->groupid);
-        $data=array(
-          'projects'=>$projects
-        );
         $this->pageTitle=  $this->groupInfo['title'];
         $this->render('index',$data);
     }

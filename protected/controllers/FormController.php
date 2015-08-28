@@ -400,12 +400,20 @@ class FormController extends Q {
         $model = new Comments;
         $model->attributes = $attr;
         if ($model->save()) {
-            $_uinfo = UserInfo::model()->findByPk($model['uid']);
-            $model['uid'] = array(
-                'truename' => $_uinfo['truename'],
-                'uid' => $model['uid']
-            );
-            $html = $this->renderPartial('/tasks/_comment', $model, true);
+            //推送提醒
+            //取出所有与本任务有关的人
+            $users=  TaskRelation::getMembers($id);
+            foreach($users as $val){
+                $noticeData = array(
+                    'uid' => $val['id'],
+                    'pid' => $task['pid'],
+                    'tid' => $id,
+                    'logid' => $this->uid,
+                    'content' => $this->userInfo['username'] . '评论任务「' . $task['title'].'」：'.$c,
+                );
+                Notification::add($noticeData, $this->uid, 'notice');
+            }
+            $html = $this->renderPartial('/tasks/_comment', array('data'=>$model), true);
             $this->jsonOutPut(1, $html);
         } else {
             $this->jsonOutPut(0, '评论失败');

@@ -37,6 +37,6 @@ if($info['expired_time']<zmf::now() && $info['expired_time']>0){
         <div class="form-group"><a class="btn btn-primary btn-xs zmf" action="comment" data-loading-text="提交..." action-data="<?php echo tools::jiaMi($info['id']);?>">提交</a></div>
     </div>
     <?php if(!empty($members)){?>
-    <div class="panel-footer">参与者：<?php foreach($members as $mem){echo CHtml::link($mem['username'],'javascript:;').'&nbsp;';}?></div>
+    <div class="panel-footer">参与者：<?php foreach($members as $mem){echo CHtml::link($mem['username'],'javascript:;',array('action'=>'my-tasks','class'=>'zmf','action-data'=> tools::jiaMi($mem['id']))).'&nbsp;';}?></div>
     <?php }?>
 </div>

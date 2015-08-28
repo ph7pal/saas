@@ -1,4 +1,5 @@
-<div class="col-md-4 col-xs-4 col-md-offset-4 col-xs-offset-4" style="margin-top: 200px">
+<div class="col-md-4 visible-md visible-lg"></div>
+<div class="col-md-4 col-xs-12" style="margin-top: 100px">
     <div class="panel panel-primary">
         <div class="panel-heading">
           <h3 class="panel-title">登录</h3>

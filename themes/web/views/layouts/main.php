@@ -1,8 +1,15 @@
 <!DOCTYPE HTML>
 <html lang="zh-CN">
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />                
-        <meta name="robots" content="all" />    
+    <head>           
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+        <meta name="viewport" content="initial-scale=1.0,user-scalable=no,maximum-scale=1">
+        <meta content="yes" name="apple-mobile-web-app-capable" />
+        <meta content="black" name="apple-mobile-web-app-status-bar-style"  />
+        <meta name="apple-touch-fullscreen" content="yes">
+        <meta name="full-screen" content="yes">
+        <meta name="format-detection" content="telephone=no">    
+        <meta name="format-detection" content="address=no">
         <?php 
         $cs = Yii::app()->clientScript;
         $cs->registerCssFile(Yii::app()->baseUrl.'/common/css/bootstrap.min.css');
@@ -19,7 +26,7 @@
         <title><?php echo CHtml::encode($this->pageTitle); ?></title>
     </head>
     <body>
-    <div class="col-sm-2 col-md-2 sidebar no-padding">
+    <div class="col-sm-2 col-xs-2 sidebar no-padding">
             <div class="media nav-sidebar">
                 <div class="media-left">
                   <a href="#">                        
@@ -73,6 +80,7 @@
         configs.handleUrl='<?php echo Yii::app()->createUrl('form/index',array('groupid'=>  tools::jiaMi($this->groupid)));?>';
         $(function(){
             sidebar();
+            xunhuan();
             $('.autoload').click();
             $(window).resize(function() {
                 sidebar();
